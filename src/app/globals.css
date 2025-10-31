@@ -1,26 +1,82 @@
 @import "tailwindcss";
 
+/* Theme variables: primary, secondary, accent + surface/background/focus */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Core colors (light mode) */
+  --color-background: #ffffff;
+  --color-foreground: #0f1720; /* near-black for good contrast */
+  --color-primary: #0ea5e9; /* bright sky */
+  --color-secondary: #7c3aed; /* purple */
+  --color-accent: #f97316; /* orange accent */
+
+  /* Surfaces & UI */
+  --color-surface: #ffffff;
+  --color-surface-1: #f8fafc;
+  --color-border: #e6edf3;
+  --color-muted: #6b7280;
+  --color-success: #16a34a;
+  --glass-bg: rgba(255,255,255,0.6);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
+/* Dark mode overrides (follows browser preference) */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --color-background: #071024;
+    --color-foreground: #e6eef8;
+    --color-primary: #38bdf8; /* lighter sky for dark */
+    --color-secondary: #8b5cf6;
+    --color-accent: #fb923c;
+
+    --color-surface: #071428;
+    --color-surface-1: #071a2a;
+    --color-border: #12324a;
+    --color-muted: #9aa6b2;
+    --color-success: #4ade80;
+    --glass-bg: rgba(8,12,20,0.6);
   }
 }
 
+/* expose simple semantic tokens */
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-background);
+  color: var(--color-foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Theme-aware helpers */
+.text-primary { color: var(--color-primary); }
+.text-secondary { color: var(--color-secondary); }
+.text-accent { color: var(--color-accent); }
+.text-muted { color: var(--color-muted); }
+.text-success { color: var(--color-success); }
+
+.bg-primary { background-color: var(--color-primary); }
+.bg-secondary { background-color: var(--color-secondary); }
+.bg-accent { background-color: var(--color-accent); }
+.bg-surface { background-color: var(--color-surface); }
+.bg-surface-1 { background-color: var(--color-surface-1); }
+.bg-glass { background-color: var(--glass-bg); }
+
+.border-theme { border-color: var(--color-border); }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-weight: 500; }
+.btn-outline { background: transparent; border: 1px solid var(--color-border); color: var(--color-foreground); }
+.btn-primary { background: var(--color-primary); color: white; border: 1px solid transparent; }
+.btn-secondary { background: var(--color-secondary); color: white; border: 1px solid transparent; }
+.btn-accent { background: var(--color-accent); color: white; border: 1px solid transparent; }
+.btn-success { background: var(--color-success); color: white; border: 1px solid transparent; }
+.btn-ghost { background: transparent; color: var(--color-foreground); }
+
+.btn:hover { filter:brightness(0.95); }
+
+/* Cards */
+.card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 0.5rem; padding: 1rem; }
+
+/* small utilities used in header */
+.site-header { border-bottom-width: 1px; }
+.link-underline:hover { text-decoration: underline; }
+
+/* Accessible focus outlines using theme */
+:focus { outline: 3px solid rgba(14,165,233,0.12); outline-offset: 2px; }
+
