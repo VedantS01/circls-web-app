@@ -14,8 +14,15 @@ if (!supabaseUrl || !supabaseServiceKey) {
 }
 
 export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  // Ensure this client runs server-side only and uses no browser features
-  auth: { persistSession: false, detectSessionInUrl: false },
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+    detectSessionInUrl: false
+  },
+  // Explicitly disable RLS for admin operations
+  db: {
+    schema: 'public'
+  }
 })
 
 export default supabaseAdmin

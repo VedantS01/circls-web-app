@@ -126,7 +126,7 @@ export default function AdminBookings() {
                   <div className="text-right text-sm">
                     <div className="font-medium">{new Date(booking.start_datetime).toLocaleString()}</div>
                     <div className="text-xs text-muted">to {new Date(booking.end_datetime).toLocaleString()}</div>
-                    <div className="mt-2 font-semibold">£{booking.total_amount}</div>
+                    <div className="mt-2 font-semibold">₹{booking.total_amount}</div>
                     <div className="text-xs text-muted">Attendees: {booking.number_of_attendees}</div>
                   </div>
                 </div>

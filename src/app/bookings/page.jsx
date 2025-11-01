@@ -39,7 +39,7 @@ export default function UserBookings() {
         return
       }
       const uid = session.session.user.id
-      const { data } = await supabase.from('bookings').select('*').eq('profile_id', uid)
+      const { data } = await supabase.from('bookings').select('*').eq('user_id', uid)
       if (mounted) setBookings(data || [])
       if (mounted) setLoading(false)
     }
@@ -118,11 +118,11 @@ export default function UserBookings() {
           ) : (
             <Grid container spacing={3}>
               {bookings.map(booking => (
-                <Grid item xs={12} key={booking.id}>
+                <Grid xs={12} key={booking.id}>
                   <Card elevation={0} sx={{ border: 1, borderColor: 'divider' }}>
                     <CardContent sx={{ p: 3 }}>
                       <Grid container spacing={3}>
-                        <Grid item xs={12} md={8}>
+                        <Grid xs={12} md={8}>
                           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
                             <Box
                               sx={{
@@ -151,7 +151,7 @@ export default function UserBookings() {
                           <Divider sx={{ my: 2 }} />
 
                           <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
+                            <Grid xs={12} sm={6}>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                                 <CalendarToday sx={{ fontSize: 18, color: 'text.secondary' }} />
                                 <Typography variant="body2" color="text.secondary">
@@ -165,7 +165,7 @@ export default function UserBookings() {
                               </Typography>
                             </Grid>
 
-                            <Grid item xs={12} sm={6}>
+                            <Grid xs={12} sm={6}>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                                 <CalendarToday sx={{ fontSize: 18, color: 'text.secondary' }} />
                                 <Typography variant="body2" color="text.secondary">
@@ -181,7 +181,7 @@ export default function UserBookings() {
                           </Grid>
                         </Grid>
 
-                        <Grid item xs={12} md={4}>
+                        <Grid xs={12} md={4}>
                           <Box
                             sx={{
                               bgcolor: 'grey.50',
@@ -196,7 +196,7 @@ export default function UserBookings() {
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                               <AttachMoney sx={{ fontSize: 20, color: 'success.main' }} />
                               <Typography variant="h5" sx={{ fontWeight: 700, color: 'success.main' }}>
-                                £{booking.total_amount || '0.00'}
+                                ₹{booking.total_amount || '0.00'}
                               </Typography>
                             </Box>
 

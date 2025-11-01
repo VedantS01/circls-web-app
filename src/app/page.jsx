@@ -26,20 +26,58 @@ import {
   ArrowForward,
   Dashboard,
   Login,
+  Event,
+  CalendarToday,
+  Schedule,
 } from '@mui/icons-material'
 
 export default function HomePage() {
   const [destinations, setDestinations] = useState([])
+  const [upcomingEvents, setUpcomingEvents] = useState([])
+  const [popularDestinations, setPopularDestinations] = useState([])
   const { user, verified, organizations } = useUser()
   const router = useRouter()
   const [query, setQuery] = useState('')
 
   useEffect(() => {
-    async function fetchDestinations() {
-      const { data } = await supabase.from('destinations').select('*')
-      setDestinations(data || [])
+    async function fetchData() {
+      // Fetch all destinations
+      const { data: allDest } = await supabase
+        .from('destinations')
+        .select('*')
+        .order('created_at', { ascending: false })
+      setDestinations(allDest || [])
+
+      // Fetch upcoming events (future events, limit 6)
+      const now = new Date().toISOString()
+      const { data: events } = await supabase
+        .from('events')
+        .select('*, destinations(name)')
+        .gte('start_datetime', now)
+        .order('start_datetime', { ascending: true })
+        .limit(6)
+      setUpcomingEvents(events || [])
+
+      // Fetch popular destinations (destinations with most bookings)
+      const { data: bookingsCount } = await supabase
+        .from('bookings')
+        .select('destination_id')
+      
+      // Count bookings per destination
+      const countMap = {}
+      bookingsCount?.forEach(b => {
+        countMap[b.destination_id] = (countMap[b.destination_id] || 0) + 1
+      })
+      
+      // Sort destinations by booking count
+      const sorted = (allDest || [])
+        .map(dest => ({ ...dest, bookingCount: countMap[dest.id] || 0 }))
+        .sort((a, b) => b.bookingCount - a.bookingCount)
+        .slice(0, 6)
+      
+      setPopularDestinations(sorted)
     }
-    fetchDestinations()
+    fetchData()
   }, [])
 
   const handleSearch = (e) => {
@@ -69,7 +107,7 @@ export default function HomePage() {
       >
         <Container maxWidth="lg">
           <Grid container spacing={4} alignItems="center">
-            <Grid item xs={12} md={7}>
+            <Grid xs={12} md={7}>
               <Typography
                 variant="h2"
                 sx={{
@@ -136,7 +174,7 @@ export default function HomePage() {
               </Typography>
             </Grid>
 
-            <Grid item xs={12} md={5}>
+            <Grid xs={12} md={5}>
               <Card elevation={3}>
                 <CardContent sx={{ p: 3 }}>
                   <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
@@ -204,79 +242,273 @@ export default function HomePage() {
 
       {/* Featured Destinations */}
       <Container maxWidth="lg" sx={{ py: 8 }}>
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-            Featured Destinations
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Popular venues in your area
-          </Typography>
+        <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <TrendingUp sx={{ fontSize: 40, color: 'primary.main' }} />
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
+              Popular Destinations
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Most booked venues this month
+            </Typography>
+          </Box>
         </Box>
 
         <Grid container spacing={3}>
-          {destinations.slice(0, 6).map((dest) => (
-            <Grid item xs={12} sm={6} md={4} key={dest.id}>
-              <Card
-                elevation={0}
-                sx={{
-                  border: 1,
-                  borderColor: 'divider',
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    boxShadow: 3,
-                    transform: 'translateY(-4px)',
-                  },
-                }}
-              >
-                <Box
+          {popularDestinations.length > 0 ? (
+            popularDestinations.map((dest) => (
+              <Grid xs={12} sm={6} md={4} key={dest.id}>
+                <Card
+                  elevation={0}
                   sx={{
-                    height: 200,
-                    bgcolor: 'grey.100',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderBottom: 1,
+                    border: 1,
                     borderColor: 'divider',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      boxShadow: 3,
+                      transform: 'translateY(-4px)',
+                    },
                   }}
                 >
-                  <Place sx={{ fontSize: 64, color: 'grey.400' }} />
-                </Box>
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-                    {dest.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                    {dest.address || 'No address provided'}
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    {dest.capacity && (
+                  <Box
+                    sx={{
+                      height: 200,
+                      bgcolor: 'grey.100',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderBottom: 1,
+                      borderColor: 'divider',
+                      position: 'relative',
+                    }}
+                  >
+                    <Place sx={{ fontSize: 64, color: 'grey.400' }} />
+                    {dest.bookingCount > 0 && (
                       <Chip
-                        label={`Capacity: ${dest.capacity}`}
+                        label={`${dest.bookingCount} bookings`}
                         size="small"
-                        variant="outlined"
+                        color="primary"
+                        sx={{
+                          position: 'absolute',
+                          top: 12,
+                          right: 12,
+                          fontWeight: 600,
+                        }}
                       />
                     )}
                   </Box>
-                </CardContent>
-                <CardActions sx={{ p: 2, pt: 0 }}>
-                  <Button
-                    component={Link}
-                    href={`/destination/${dest.id}`}
-                    endIcon={<ArrowForward />}
-                    fullWidth
-                    variant="outlined"
+                  <CardContent sx={{ flexGrow: 1 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                      {dest.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                      {dest.address || 'No address provided'}
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                      {dest.type && (
+                        <Chip label={dest.type} size="small" variant="outlined" />
+                      )}
+                      {dest.capacity && (
+                        <Chip
+                          label={`Capacity: ${dest.capacity}`}
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                    </Box>
+                  </CardContent>
+                  <CardActions sx={{ p: 2, pt: 0 }}>
+                    <Button
+                      component={Link}
+                      href={`/destination/${dest.id}`}
+                      endIcon={<ArrowForward />}
+                      fullWidth
+                      variant="outlined"
+                    >
+                      View Details
+                    </Button>
+                  </CardActions>
+                </Card>
+              </Grid>
+            ))
+          ) : (
+            destinations.slice(0, 6).map((dest) => (
+              <Grid xs={12} sm={6} md={4} key={dest.id}>
+                <Card
+                  elevation={0}
+                  sx={{
+                    border: 1,
+                    borderColor: 'divider',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      boxShadow: 3,
+                      transform: 'translateY(-4px)',
+                    },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      height: 200,
+                      bgcolor: 'grey.100',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderBottom: 1,
+                      borderColor: 'divider',
+                    }}
                   >
-                    View Details
-                  </Button>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
+                    <Place sx={{ fontSize: 64, color: 'grey.400' }} />
+                  </Box>
+                  <CardContent sx={{ flexGrow: 1 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                      {dest.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                      {dest.address || 'No address provided'}
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                      {dest.type && (
+                        <Chip label={dest.type} size="small" variant="outlined" />
+                      )}
+                      {dest.capacity && (
+                        <Chip
+                          label={`Capacity: ${dest.capacity}`}
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                    </Box>
+                  </CardContent>
+                  <CardActions sx={{ p: 2, pt: 0 }}>
+                    <Button
+                      component={Link}
+                      href={`/destination/${dest.id}`}
+                      endIcon={<ArrowForward />}
+                      fullWidth
+                      variant="outlined"
+                    >
+                      View Details
+                    </Button>
+                  </CardActions>
+                </Card>
+              </Grid>
+            ))
+          )}
         </Grid>
       </Container>
+
+      {/* Upcoming Events */}
+      {upcomingEvents.length > 0 && (
+        <Box sx={{ bgcolor: 'grey.50', py: 8 }}>
+          <Container maxWidth="lg">
+            <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Event sx={{ fontSize: 40, color: 'secondary.main' }} />
+              <Box>
+                <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
+                  Upcoming Events
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Don&apos;t miss out on these exciting events
+                </Typography>
+              </Box>
+            </Box>
+
+            <Grid container spacing={3}>
+              {upcomingEvents.map((event) => (
+                <Grid xs={12} sm={6} md={4} key={event.id}>
+                  <Card
+                    elevation={0}
+                    sx={{
+                      border: 1,
+                      borderColor: 'divider',
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        boxShadow: 3,
+                        transform: 'translateY(-4px)',
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        height: 160,
+                        bgcolor: 'secondary.50',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                      }}
+                    >
+                      <Event sx={{ fontSize: 64, color: 'secondary.main' }} />
+                    </Box>
+                    <CardContent sx={{ flexGrow: 1 }}>
+                      <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                        {event.name}
+                      </Typography>
+                      {event.destinations && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+                          <Place sx={{ fontSize: 16, color: 'text.secondary' }} />
+                          <Typography variant="body2" color="text.secondary">
+                            {event.destinations.name}
+                          </Typography>
+                        </Box>
+                      )}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+                        <CalendarToday sx={{ fontSize: 16, color: 'text.secondary' }} />
+                        <Typography variant="body2" color="text.secondary">
+                          {new Date(event.start_datetime).toLocaleDateString('en-GB', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                          })}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2 }}>
+                        <Schedule sx={{ fontSize: 16, color: 'text.secondary' }} />
+                        <Typography variant="body2" color="text.secondary">
+                          {new Date(event.start_datetime).toLocaleTimeString('en-GB', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </Typography>
+                      </Box>
+                      {event.price && (
+                        <Chip
+                          label={`₹${parseFloat(event.price).toFixed(2)}`}
+                          color="success"
+                          size="small"
+                          sx={{ fontWeight: 600 }}
+                        />
+                      )}
+                    </CardContent>
+                    <CardActions sx={{ p: 2, pt: 0 }}>
+                      <Button
+                        component={Link}
+                        href={`/destination/${event.destination_id}`}
+                        endIcon={<ArrowForward />}
+                        fullWidth
+                        variant="contained"
+                        color="secondary"
+                      >
+                        View Event
+                      </Button>
+                    </CardActions>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Container>
+        </Box>
+      )}
 
       {/* Categories */}
       <Box sx={{ bgcolor: 'grey.50', py: 8 }}>

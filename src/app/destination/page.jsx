@@ -23,7 +23,6 @@ import {
   People,
   ArrowForward,
 } from '@mui/icons-material'
-
 export default function DestinationIndex() {
   const [dests, setDests] = useState([])
   const [loading, setLoading] = useState(true)
@@ -136,7 +135,7 @@ export default function DestinationIndex() {
         ) : (
           <Grid container spacing={3}>
             {filteredDests.map(dest => (
-              <Grid item xs={12} sm={6} md={4} key={dest.id}>
+              <Grid xs={12} sm={6} md={4} key={dest.id}>
                 <Card
                   elevation={0}
                   sx={{

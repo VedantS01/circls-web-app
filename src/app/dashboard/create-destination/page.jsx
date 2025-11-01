@@ -171,7 +171,7 @@ export default function CreateDestination() {
               <form onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
                   {/* Organization Selection */}
-                  <Grid item xs={12}>
+                  <Grid xs={12}>
                     <FormControl fullWidth>
                       <InputLabel>Organization</InputLabel>
                       <Select
@@ -188,12 +188,12 @@ export default function CreateDestination() {
                     </FormControl>
                   </Grid>
 
-                  <Grid item xs={12}>
+                  <Grid xs={12}>
                     <Divider />
                   </Grid>
 
                   {/* Name */}
-                  <Grid item xs={12}>
+                  <Grid xs={12}>
                     <TextField
                       fullWidth
                       required
@@ -206,7 +206,7 @@ export default function CreateDestination() {
                   </Grid>
 
                   {/* Description */}
-                  <Grid item xs={12}>
+                  <Grid xs={12}>
                     <TextField
                       fullWidth
                       multiline
@@ -220,7 +220,7 @@ export default function CreateDestination() {
                   </Grid>
 
                   {/* Address */}
-                  <Grid item xs={12}>
+                  <Grid xs={12}>
                     <TextField
                       fullWidth
                       label="Address"
@@ -232,7 +232,7 @@ export default function CreateDestination() {
                   </Grid>
 
                   {/* Capacity and Type */}
-                  <Grid item xs={12} sm={6}>
+                  <Grid xs={12} sm={6}>
                     <TextField
                       fullWidth
                       type="number"
@@ -244,7 +244,7 @@ export default function CreateDestination() {
                     />
                   </Grid>
 
-                  <Grid item xs={12} sm={6}>
+                  <Grid xs={12} sm={6}>
                     <TextField
                       fullWidth
                       label="Type"
@@ -256,7 +256,7 @@ export default function CreateDestination() {
                   </Grid>
 
                   {/* Submit Button */}
-                  <Grid item xs={12}>
+                  <Grid xs={12}>
                     <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
                       <Button
                         variant="outlined"

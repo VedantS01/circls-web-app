@@ -107,13 +107,21 @@ export default function OnboardingPage() {
         body: JSON.stringify({ payload, userId: session.user.id }),
       })
       const result = await res.json()
+      
+      console.log('Create organization response:', { status: res.status, result });
+      
       setLoading(false)
       
       if (!res.ok) {
-        setError('Error creating organization: ' + (result.error || res.statusText))
+        const errorMessage = result.error || res.statusText
+        const errorDetails = result.details ? ` (${result.details})` : ''
+        const errorHint = result.hint ? ` Hint: ${result.hint}` : ''
+        console.error('Create organization failed:', { status: res.status, result });
+        setError(`Error creating organization: ${errorMessage}${errorDetails}${errorHint}`)
         return
       }
       
+      console.log('Organization created successfully:', result.organization);
       router.push('/dashboard')
     } catch (err) {
       setLoading(false)

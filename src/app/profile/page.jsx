@@ -123,7 +123,7 @@ export default function ProfilePage() {
             {/* Form */}
             <form onSubmit={save}>
               <Grid container spacing={3}>
-                <Grid item xs={12}>
+                <Grid xs={12}>
                   <TextField
                     fullWidth
                     label="Email Address"
@@ -133,7 +133,7 @@ export default function ProfilePage() {
                   />
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid xs={12}>
                   <TextField
                     fullWidth
                     label="Full Name"
@@ -143,7 +143,7 @@ export default function ProfilePage() {
                   />
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid xs={12}>
                   <TextField
                     fullWidth
                     label="Avatar URL"
@@ -157,7 +157,7 @@ export default function ProfilePage() {
                   />
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid xs={12}>
                   <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
                     <Button
                       type="submit"
@@ -182,7 +182,7 @@ export default function ProfilePage() {
               Account Information
             </Typography>
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
+              <Grid xs={12} sm={6}>
                 <Typography variant="body2" color="text.secondary">
                   User ID
                 </Typography>
@@ -190,7 +190,7 @@ export default function ProfilePage() {
                   {user.id}
                 </Typography>
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid xs={12} sm={6}>
                 <Typography variant="body2" color="text.secondary">
                   Account Created
                 </Typography>

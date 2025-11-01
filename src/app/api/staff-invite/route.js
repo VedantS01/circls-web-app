@@ -1,79 +1,85 @@
 import { randomUUID } from 'node:crypto'
-import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdminClient'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
 export async function POST(request) {
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return NextResponse.json({ error: 'Supabase environment not configured' }, { status: 500 })
-  }
-
   try {
-    const authHeader = request.headers.get('authorization') || request.headers.get('Authorization')
-    if (!authHeader || !authHeader.toLowerCase().startsWith('bearer ')) {
-      return NextResponse.json({ error: 'Missing access token' }, { status: 401 })
+    const body = await request.json().catch(() => ({}))
+    
+    // Extract token from body or Authorization header
+    const token = body?.access_token || request.headers.get('authorization')?.replace(/^Bearer\s+/i, '')
+    
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized - Missing access token' }, { status: 401 })
     }
 
-    const accessToken = authHeader.substring(7)
-    const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
-      global: {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      },
-      auth: { persistSession: false },
-    })
+    // Verify token and get user
+    let user = null
+    if (supabaseAdmin.auth && typeof supabaseAdmin.auth.getUser === 'function') {
+      const userRes = await supabaseAdmin.auth.getUser(token)
+      user = userRes?.data?.user || userRes?.user || null
+    }
+    
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized - Invalid token' }, { status: 401 })
+    }
 
-    const body = await request.json().catch(() => ({}))
     const email = body?.email?.trim()
-    const organizationId = body?.organization_id
-    const destinationId = body?.destination_id
+    const organizationId = body?.organizationId
+    const destinationId = body?.destinationId
 
     if (!email || !organizationId || !destinationId) {
-      return NextResponse.json({ error: 'Missing email, organization_id or destination_id' }, { status: 400 })
+      return NextResponse.json({ error: 'Missing email, organizationId or destinationId' }, { status: 400 })
     }
 
-  const token = randomUUID().replace(/-/g, '')
+    // Verify user has staff_manager permission
+    const { data: membership } = await supabaseAdmin
+      .from('organization_memberships')
+      .select('permissions')
+      .eq('organization_id', organizationId)
+      .eq('profile_id', user.id)
+      .single()
+
+    if (!membership || !membership.permissions.includes('staff_manager')) {
+      return NextResponse.json(
+        { error: 'You do not have permission to send invites' },
+        { status: 403 }
+      )
+    }
+
+    const inviteToken = randomUUID().replace(/-/g, '')
     const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString()
 
-    const { data: invite, error } = await supabaseUser
+    const { data: invite, error } = await supabaseAdmin
       .from('staff_invites')
       .insert([
         {
           organization_id: organizationId,
           destination_id: destinationId,
           invited_email: email,
-          token,
+          token: inviteToken,
           expires_at: expiresAt,
+          created_by: user.id,
         },
       ])
       .select()
-      .maybeSingle()
+      .single()
 
     if (error) {
-      const status = error.code === '42501' ? 403 : 500
-      return NextResponse.json({ error: error.message }, { status })
+      console.error('Error creating invite:', error)
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    let generatedLink = null
-    if (supabaseAdmin && supabaseAdmin.auth?.admin?.generateLink) {
-      try {
-        const result = await supabaseAdmin.auth.admin.generateLink({ type: 'signup', email, password: null })
-        generatedLink = result?.data?.link || null
-      } catch (err) {
-        console.warn('staff-invite: generateLink failed', err?.message || err)
-      }
-    }
-
-    const fallbackLink = `/accept-invite?token=${invite.token}`
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    const inviteLink = `${baseUrl}/staff-invite?token=${inviteToken}`
 
     return NextResponse.json({
-      message: 'Invite created',
+      success: true,
       invite,
-      link: generatedLink || fallbackLink,
+      inviteLink,
     })
   } catch (err) {
+    console.error('Staff invite error:', err)
     return NextResponse.json({ error: err.message || String(err) }, { status: 500 })
   }
 }
