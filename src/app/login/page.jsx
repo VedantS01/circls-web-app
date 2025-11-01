@@ -10,7 +10,7 @@ export default function LoginPage() {
 
   React.useEffect(() => {
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) router.push('/onboarding')
+      if (session) router.push('/')
     })
     return () => listener.subscription.unsubscribe()
   }, [router])

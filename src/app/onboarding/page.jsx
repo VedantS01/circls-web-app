@@ -76,20 +76,16 @@ export default function OnboardingPage() {
       return
     }
 
+    const payload = { name: orgName.trim() }
     const { error, data } = await supabase
       .from('organizations')
-      .insert([{ name: orgName, owner_id: session.user.id }])
+      .insert([payload])
       .select()
       .single()
     setLoading(false)
     if (error) {
       alert('Error creating organization: ' + error.message)
     } else {
-      await supabase.from('org_admin_links').insert([{
-        user_id: session.user.id,
-        organization_id: data.id,
-        permissions: ['manage_bookings','edit_details']
-      }])
       router.push('/dashboard')
     }
   }

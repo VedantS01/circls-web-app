@@ -3,10 +3,13 @@ import React, { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
 import useUser from '@/hooks/useUser'
+import { useRouter } from 'next/navigation'
 
 export default function HomePage() {
   const [destinations, setDestinations] = useState([])
-  const { user, verified, loading: userLoading } = useUser()
+  const { user, verified, loading: userLoading, organizations } = useUser()
+  const router = useRouter()
+  const [query, setQuery] = useState('')
 
   useEffect(() => {
     async function fetchDestinations() {
@@ -24,10 +27,10 @@ export default function HomePage() {
             <h1 className="text-4xl font-extrabold mb-2">Book local courts, fields and events — quickly</h1>
             <p className="text-lg text-muted mb-4">Discover nearby venues, reserve slots, create communities and manage bookings with Circles.</p>
 
-            <div className="flex gap-3">
-              <input aria-label="Search" placeholder="Search by name, type or location" className="flex-1 p-3 rounded border" />
-              <button className="btn btn-primary">Search</button>
-            </div>
+            <form className="flex gap-3" onSubmit={(e) => { e.preventDefault(); router.push(`/search?q=${encodeURIComponent(query)}`) }}>
+              <input aria-label="Search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by name, type or location" className="flex-1 p-3 rounded border" />
+              <button className="btn btn-primary" type="submit">Search</button>
+            </form>
 
               <div className="mt-4 text-sm text-muted">
               <span>Already a host? </span>
@@ -40,7 +43,9 @@ export default function HomePage() {
               <h3 className="font-semibold">Quick actions</h3>
               <ul className="mt-3 space-y-2 text-sm">
                 <li><Link href="/search" className="text-primary">Find a destination</Link></li>
-                <li><Link href="/circles" className="text-primary">Explore circles</Link></li>
+                {organizations && organizations.length > 0 && (
+                  <li><Link href="/dashboard" className="text-primary">Manage destinations</Link></li>
+                )}
                 <li>
                   {user ? (
                       verified ? (

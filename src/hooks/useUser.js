@@ -33,16 +33,28 @@ export default function useUser() {
       const { data: p } = await supabase.from('profiles').select('*').eq('id', u.id).maybeSingle()
       if (mounted) setProfile(p || null)
 
-      // memberships/organizations
-      const { data: orgs1 } = await supabase.from('organizations').select('*').eq('owner_id', u.id)
-      const { data: links } = await supabase.from('org_admin_links').select('organization_id').eq('user_id', u.id)
-      let orgs = orgs1 || []
-      if (links && links.length > 0) {
-        const ids = links.map(l => l.organization_id)
-        const { data: linkedOrgs } = await supabase.from('organizations').select('*').in('id', ids)
-        orgs = [...orgs, ...(linkedOrgs || [])]
+      // memberships/organizations via new membership table
+      const { data: orgMemberships, error: orgMembershipError } = await supabase
+        .from('organization_memberships')
+        .select('organization_id, permissions, organization:organization_id (*)')
+        .eq('profile_id', u.id)
+
+      if (orgMembershipError) {
+        console.error('useUser: failed to load organization memberships', orgMembershipError)
       }
-      if (mounted) setOrganizations(orgs)
+
+      const resolvedOrgs = (orgMemberships || [])
+        .map((entry) => {
+          const organization = entry?.organization
+          if (!organization) return null
+          return {
+            ...organization,
+            membershipPermissions: Array.isArray(entry.permissions) ? entry.permissions : [],
+          }
+        })
+        .filter(Boolean)
+
+      if (mounted) setOrganizations(resolvedOrgs)
 
     // verified check: for email-based auth, consider users verified when their email is confirmed.
     // Supabase sets `email_confirmed_at` on the user session when verification link is clicked.
