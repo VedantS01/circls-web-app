@@ -38,7 +38,7 @@ BEGIN
       'authenticated',
       'authenticated',
       'user' || v_counter || '@example.com',
-      crypt('password123', gen_salt('bf')),
+      '$2a$10$8K1p/a0dL3LKkDW1kJ4KjO7z6YF2K3QxK8K8K8K8K8K8K8K8K8K8K8',
       NOW(),
       NOW(),
       NOW(),
