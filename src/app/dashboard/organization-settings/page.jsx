@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import VerifiedGuard from '@/components/VerifiedGuard'
@@ -17,7 +17,7 @@ import {
 } from '@mui/material'
 import { ArrowBack, Save, Business } from '@mui/icons-material'
 
-export default function OrganizationSettings() {
+function OrganizationSettingsContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const orgId = searchParams.get('org')
@@ -376,5 +376,19 @@ export default function OrganizationSettings() {
         </Card>
       </Container>
     </VerifiedGuard>
+  )
+}
+
+export default function OrganizationSettings() {
+  return (
+    <Suspense fallback={
+      <VerifiedGuard>
+        <Container maxWidth="md" sx={{ py: 4, textAlign: 'center' }}>
+          <CircularProgress />
+        </Container>
+      </VerifiedGuard>
+    }>
+      <OrganizationSettingsContent />
+    </Suspense>
   )
 }

@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
@@ -27,7 +27,7 @@ import {
   Clear,
 } from '@mui/icons-material'
 
-export default function SearchPage() {
+function SearchPageContent() {
   const searchParams = useSearchParams()
   const [q, setQ] = useState(searchParams.get('q') || '')
   const [type, setType] = useState(searchParams.get('type') || '')
@@ -253,5 +253,17 @@ export default function SearchPage() {
         </Box>
       )}
     </Container>
+  )
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
+        <CircularProgress />
+      </Container>
+    }>
+      <SearchPageContent />
+    </Suspense>
   )
 }
