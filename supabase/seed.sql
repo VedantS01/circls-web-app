@@ -4,6 +4,9 @@
 
 BEGIN;
 
+-- Enable pgcrypto extension for password hashing
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- First, create 1000 users (profiles)
 -- Note: In production, these would be created through Supabase Auth
 -- For seeding, we'll create profiles directly
