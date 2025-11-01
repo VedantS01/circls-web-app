@@ -4,10 +4,33 @@ import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
 import useUser from '@/hooks/useUser'
 import { useRouter } from 'next/navigation'
+import {
+  Container,
+  Box,
+  Typography,
+  Button,
+  TextField,
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
+  Chip,
+  Paper,
+  InputAdornment,
+} from '@mui/material'
+import {
+  Search,
+  Place,
+  EventAvailable,
+  TrendingUp,
+  ArrowForward,
+  Dashboard,
+  Login,
+} from '@mui/icons-material'
 
 export default function HomePage() {
   const [destinations, setDestinations] = useState([])
-  const { user, verified, loading: userLoading, organizations } = useUser()
+  const { user, verified, organizations } = useUser()
   const router = useRouter()
   const [query, setQuery] = useState('')
 
@@ -19,75 +42,271 @@ export default function HomePage() {
     fetchDestinations()
   }, [])
 
+  const handleSearch = (e) => {
+    e.preventDefault()
+    router.push(`/search?q=${encodeURIComponent(query)}`)
+  }
+
+  const categories = [
+    'Badminton Court',
+    'Tennis Court',
+    'Football Pitch',
+    'Basketball',
+    'Gym',
+  ]
+
   return (
-    <div className="px-4 py-8">
-      <section className="max-w-6xl mx-auto">
-  <div className="rounded-lg bg-surface-1 p-8 mb-8 flex flex-col md:flex-row items-center gap-6">
-          <div className="flex-1">
-            <h1 className="text-4xl font-extrabold mb-2">Book local courts, fields and events — quickly</h1>
-            <p className="text-lg text-muted mb-4">Discover nearby venues, reserve slots, create communities and manage bookings with Circles.</p>
+    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
+      {/* Hero Section */}
+      <Box
+        sx={{
+          background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+          color: 'white',
+          py: { xs: 6, md: 10 },
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <Container maxWidth="lg">
+          <Grid container spacing={4} alignItems="center">
+            <Grid item xs={12} md={7}>
+              <Typography
+                variant="h2"
+                sx={{
+                  fontWeight: 800,
+                  mb: 2,
+                  fontSize: { xs: '2rem', md: '3rem' },
+                }}
+              >
+                Book Local Courts, Fields & Events
+              </Typography>
+              <Typography
+                variant="h6"
+                sx={{ mb: 4, opacity: 0.95, fontWeight: 400 }}
+              >
+                Discover nearby venues, reserve slots, and manage bookings with Circls
+              </Typography>
 
-            <form className="flex gap-3" onSubmit={(e) => { e.preventDefault(); router.push(`/search?q=${encodeURIComponent(query)}`) }}>
-              <input aria-label="Search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by name, type or location" className="flex-1 p-3 rounded border" />
-              <button className="btn btn-primary" type="submit">Search</button>
-            </form>
+              <Paper
+                component="form"
+                onSubmit={handleSearch}
+                elevation={3}
+                sx={{
+                  p: 0.5,
+                  display: 'flex',
+                  alignItems: 'center',
+                  bgcolor: 'white',
+                  borderRadius: 2,
+                }}
+              >
+                <TextField
+                  fullWidth
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search by name, type or location..."
+                  variant="standard"
+                  InputProps={{
+                    disableUnderline: true,
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Search sx={{ color: 'text.secondary', ml: 1 }} />
+                      </InputAdornment>
+                    ),
+                    sx: { px: 2, py: 1 },
+                  }}
+                />
+                <Button
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  sx={{ minWidth: 120, borderRadius: 1.5 }}
+                >
+                  Search
+                </Button>
+              </Paper>
 
-              <div className="mt-4 text-sm text-muted">
-              <span>Already a host? </span>
-              <Link href="/onboarding" className="text-primary">Create your organization</Link>
-            </div>
-          </div>
+              <Typography variant="body2" sx={{ mt: 2, opacity: 0.9 }}>
+                Already a host?{' '}
+                <Link
+                  href="/onboarding"
+                  style={{ color: 'white', fontWeight: 600, textDecoration: 'underline' }}
+                >
+                  Create your organization
+                </Link>
+              </Typography>
+            </Grid>
 
-          <div className="w-full md:w-1/3">
-            <div className="bg-surface p-4 rounded shadow">
-              <h3 className="font-semibold">Quick actions</h3>
-              <ul className="mt-3 space-y-2 text-sm">
-                <li><Link href="/search" className="text-primary">Find a destination</Link></li>
-                {organizations && organizations.length > 0 && (
-                  <li><Link href="/dashboard" className="text-primary">Manage destinations</Link></li>
-                )}
-                <li>
-                  {user ? (
+            <Grid item xs={12} md={5}>
+              <Card elevation={3}>
+                <CardContent sx={{ p: 3 }}>
+                  <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                    Quick Actions
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                    <Button
+                      variant="outlined"
+                      fullWidth
+                      startIcon={<Place />}
+                      onClick={() => router.push('/search')}
+                      sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
+                    >
+                      Find a Destination
+                    </Button>
+
+                    {organizations && organizations.length > 0 && (
+                      <Button
+                        variant="outlined"
+                        fullWidth
+                        startIcon={<Dashboard />}
+                        onClick={() => router.push('/dashboard')}
+                        sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
+                      >
+                        Manage Destinations
+                      </Button>
+                    )}
+
+                    {user ? (
                       verified ? (
-                      <Link href="/bookings" className="text-primary">My bookings</Link>
+                        <Button
+                          variant="outlined"
+                          fullWidth
+                          startIcon={<EventAvailable />}
+                          onClick={() => router.push('/bookings')}
+                          sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
+                        >
+                          My Bookings
+                        </Button>
+                      ) : (
+                        <Chip
+                          label="Verify your account to book"
+                          color="warning"
+                          sx={{ width: '100%', height: 'auto', py: 1.5 }}
+                        />
+                      )
                     ) : (
-                      <span className="text-accent">Verify your phone to book</span>
-                    )
-                  ) : (
-                    <Link href="/login" className="text-primary">Log in to get started</Link>
-                  )}
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
+                      <Button
+                        variant="contained"
+                        fullWidth
+                        startIcon={<Login />}
+                        onClick={() => router.push('/login')}
+                        sx={{ justifyContent: 'flex-start', textTransform: 'none' }}
+                      >
+                        Log in to Get Started
+                      </Button>
+                    )}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
 
-        <section className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4">Featured destinations</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {destinations.slice(0,6).map(d => (
-              <div key={d.id} className="p-4 border rounded bg-surface">
-                <div className="h-36 bg-surface-1 rounded mb-3 flex items-center justify-center text-muted">Photo</div>
-                <div className="font-medium">{d.name}</div>
-                <div className="text-sm text-muted">{d.type} • {d.address}</div>
-                <div className="mt-3 flex justify-between items-center">
-          <Link href={`/destination/${d.id}`} className="text-primary">View</Link>
-                  <div className="text-sm text-muted">£{d?.price || '—'}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+      {/* Featured Destinations */}
+      <Container maxWidth="lg" sx={{ py: 8 }}>
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+            Featured Destinations
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Popular venues in your area
+          </Typography>
+        </Box>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4">Browse by category</h2>
-          <div className="flex flex-wrap gap-3">
-            {['Badminton Court','Tennis Court','Football Pitch','Basketball','Gym'].map(c => (
-              <Link key={c} href={`/search?type=${encodeURIComponent(c)}`} className="px-3 py-2 border rounded text-sm">{c}</Link>
+        <Grid container spacing={3}>
+          {destinations.slice(0, 6).map((dest) => (
+            <Grid item xs={12} sm={6} md={4} key={dest.id}>
+              <Card
+                elevation={0}
+                sx={{
+                  border: 1,
+                  borderColor: 'divider',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    boxShadow: 3,
+                    transform: 'translateY(-4px)',
+                  },
+                }}
+              >
+                <Box
+                  sx={{
+                    height: 200,
+                    bgcolor: 'grey.100',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderBottom: 1,
+                    borderColor: 'divider',
+                  }}
+                >
+                  <Place sx={{ fontSize: 64, color: 'grey.400' }} />
+                </Box>
+                <CardContent sx={{ flexGrow: 1 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                    {dest.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    {dest.address || 'No address provided'}
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {dest.capacity && (
+                      <Chip
+                        label={`Capacity: ${dest.capacity}`}
+                        size="small"
+                        variant="outlined"
+                      />
+                    )}
+                  </Box>
+                </CardContent>
+                <CardActions sx={{ p: 2, pt: 0 }}>
+                  <Button
+                    component={Link}
+                    href={`/destination/${dest.id}`}
+                    endIcon={<ArrowForward />}
+                    fullWidth
+                    variant="outlined"
+                  >
+                    View Details
+                  </Button>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+
+      {/* Categories */}
+      <Box sx={{ bgcolor: 'grey.50', py: 8 }}>
+        <Container maxWidth="lg">
+          <Typography variant="h4" sx={{ fontWeight: 700, mb: 4 }}>
+            Browse by Category
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+            {categories.map((category) => (
+              <Chip
+                key={category}
+                label={category}
+                component={Link}
+                href={`/search?type=${encodeURIComponent(category)}`}
+                clickable
+                sx={{
+                  px: 2,
+                  py: 2.5,
+                  fontSize: '1rem',
+                  fontWeight: 500,
+                  '&:hover': {
+                    bgcolor: 'primary.main',
+                    color: 'white',
+                  },
+                }}
+              />
             ))}
-          </div>
-        </section>
-      </section>
-    </div>
+          </Box>
+        </Container>
+      </Box>
+    </Box>
   )
 }

@@ -4,74 +4,255 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import useUser from '@/hooks/useUser'
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  IconButton,
+  Avatar,
+  Menu,
+  MenuItem,
+  Box,
+  Chip,
+  Divider,
+  ListItemIcon,
+  ListItemText,
+} from '@mui/material'
+import {
+  AccountCircle,
+  Dashboard,
+  Logout,
+  Event,
+  Place,
+  PersonAdd,
+  CheckCircle,
+  Warning,
+} from '@mui/icons-material'
 
 export default function Header() {
   const router = useRouter()
   const { user, profile, organizations, verified, loading } = useUser()
-  const [showModal, setShowModal] = React.useState(false)
+  const [anchorEl, setAnchorEl] = React.useState(null)
+  const open = Boolean(anchorEl)
 
   const avatarLabel = profile?.full_name || user?.user_metadata?.full_name || user?.email || ''
   const avatarInitial = avatarLabel ? avatarLabel.trim().charAt(0).toUpperCase() : '?'
 
+  const handleOpenMenu = (event) => {
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null)
+  }
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
+    handleCloseMenu()
     router.push('/')
   }
 
-  return (
-    <header className="site-header bg-glass backdrop-blur-sm border-theme">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Link href="/" className="text-2xl font-bold text-primary">Circls</Link>
-          <nav className="hidden md:flex items-center gap-3 text-sm text-muted">
-            <Link href="/destination" className="link-underline">Destinations</Link>
-          </nav>
-        </div>
+  const handleNavigate = (path) => {
+    router.push(path)
+    handleCloseMenu()
+  }
 
-        <div className="flex items-center gap-3">
+  return (
+    <AppBar 
+      position="sticky" 
+      elevation={0}
+      sx={{ 
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        backdropFilter: 'blur(8px)',
+        borderBottom: '1px solid',
+        borderColor: 'divider',
+      }}
+    >
+      <Toolbar sx={{ maxWidth: 1200, width: '100%', mx: 'auto', px: { xs: 2, sm: 3 } }}>
+        {/* Logo */}
+        <Typography
+          variant="h5"
+          component={Link}
+          href="/"
+          sx={{
+            flexGrow: 0,
+            fontWeight: 700,
+            color: 'primary.main',
+            textDecoration: 'none',
+            mr: 4,
+            '&:hover': {
+              opacity: 0.8,
+            },
+          }}
+        >
+          Circls
+        </Typography>
+
+        {/* Navigation */}
+        <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, gap: 1 }}>
+          <Button
+            component={Link}
+            href="/destination"
+            startIcon={<Place />}
+            sx={{ color: 'text.secondary' }}
+          >
+            Destinations
+          </Button>
+        </Box>
+
+        {/* Right side buttons */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           {!loading && !user && (
-            <Link href="/login" className="btn btn-outline">Log in</Link>
+            <Button
+              component={Link}
+              href="/login"
+              variant="outlined"
+            >
+              Log in
+            </Button>
           )}
 
           {!loading && user && (
             <>
-              <Link href="/bookings" className="px-3 py-1 rounded hover:bg-surface-1">Bookings</Link>
-              <Link href="/onboarding" className="px-3 py-1 rounded hover:bg-surface-1">Onboarding</Link>
+              <Button
+                component={Link}
+                href="/bookings"
+                startIcon={<Event />}
+                sx={{ display: { xs: 'none', sm: 'inline-flex' }, color: 'text.secondary' }}
+              >
+                Bookings
+              </Button>
+              
+              <Button
+                component={Link}
+                href="/onboarding"
+                startIcon={<PersonAdd />}
+                sx={{ display: { xs: 'none', sm: 'inline-flex' }, color: 'text.secondary' }}
+              >
+                Onboarding
+              </Button>
+
               {organizations && organizations.length > 0 && (
-                <Link href="/dashboard" className="btn btn-primary">Dashboard</Link>
+                <Button
+                  component={Link}
+                  href="/dashboard"
+                  variant="contained"
+                  startIcon={<Dashboard />}
+                  sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
+                >
+                  Dashboard
+                </Button>
               )}
 
-              <div className="ml-2 relative">
-                <button
-                  aria-label="User menu"
-                  onClick={() => setShowModal(true)}
-                  className="w-10 h-10 rounded-full flex items-center justify-center bg-accent text-on-accent font-semibold"
+              {/* User Avatar Menu */}
+              <IconButton
+                onClick={handleOpenMenu}
+                size="small"
+                aria-controls={open ? 'account-menu' : undefined}
+                aria-haspopup="true"
+                aria-expanded={open ? 'true' : undefined}
+              >
+                <Avatar
+                  src={profile?.avatar_url}
+                  alt={avatarLabel}
+                  sx={{ 
+                    width: 40, 
+                    height: 40,
+                    bgcolor: 'secondary.main',
+                    fontWeight: 600,
+                  }}
                 >
-                  {profile?.avatar_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={profile.avatar_url} alt={avatarLabel} className="w-10 h-10 rounded-full object-cover" />
-                  ) : (
-                    <span>{avatarInitial}</span>
-                  )}
-                </button>
+                  {avatarInitial}
+                </Avatar>
+              </IconButton>
 
-                {showModal && (
-                  <div className="absolute right-0 mt-2 w-64 bg-surface border rounded shadow p-4 z-50">
-                    <div className="text-sm mb-2">
-                      <div className="font-medium">{profile?.full_name || user?.user_metadata?.full_name || user.email}</div>
-                      <div className="text-xs text-muted">{user?.email}</div>
-                    </div>
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => setShowModal(false)} className="btn btn-ghost">Close</button>
-                      <button onClick={async () => { await handleLogout() }} className="btn btn-danger">Log out</button>
-                    </div>
-                  </div>
+              <Menu
+                anchorEl={anchorEl}
+                id="account-menu"
+                open={open}
+                onClose={handleCloseMenu}
+                onClick={handleCloseMenu}
+                PaperProps={{
+                  elevation: 3,
+                  sx: {
+                    minWidth: 260,
+                    mt: 1.5,
+                    overflow: 'visible',
+                    filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.08))',
+                    '&:before': {
+                      content: '""',
+                      display: 'block',
+                      position: 'absolute',
+                      top: 0,
+                      right: 14,
+                      width: 10,
+                      height: 10,
+                      bgcolor: 'background.paper',
+                      transform: 'translateY(-50%) rotate(45deg)',
+                      zIndex: 0,
+                    },
+                  },
+                }}
+                transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+              >
+                {/* User Info */}
+                <Box sx={{ px: 2, py: 1.5 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                    {avatarLabel}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    {user.email}
+                  </Typography>
+                  <Chip
+                    icon={verified ? <CheckCircle /> : <Warning />}
+                    label={verified ? 'Verified' : 'Not Verified'}
+                    size="small"
+                    color={verified ? 'success' : 'warning'}
+                    sx={{ height: 24 }}
+                  />
+                </Box>
+
+                <Divider />
+
+                {/* Menu Items */}
+                <MenuItem onClick={() => handleNavigate('/profile')}>
+                  <ListItemIcon>
+                    <AccountCircle fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Profile</ListItemText>
+                </MenuItem>
+
+                <MenuItem onClick={() => handleNavigate('/bookings')}>
+                  <ListItemIcon>
+                    <Event fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>My Bookings</ListItemText>
+                </MenuItem>
+
+                {organizations && organizations.length > 0 && (
+                  <MenuItem onClick={() => handleNavigate('/dashboard')}>
+                    <ListItemIcon>
+                      <Dashboard fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>Dashboard</ListItemText>
+                  </MenuItem>
                 )}
-              </div>
+
+                <Divider />
+
+                <MenuItem onClick={handleLogout}>
+                  <ListItemIcon>
+                    <Logout fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Logout</ListItemText>
+                </MenuItem>
+              </Menu>
             </>
           )}
-        </div>
-      </div>
-    </header>
+        </Box>
+      </Toolbar>
+    </AppBar>
   )
 }

@@ -56,14 +56,20 @@ export async function POST(req) {
       }
 
       if (!user) {
+        console.error('create-organization: User not found');
         return NextResponse.json({ error: 'Invalid token or unable to verify user' }, { status: 401 })
       }
+
+      console.log('create-organization: user found', { id: user.id, email: user.email, confirmed: user.email_confirmed_at || user.confirmed_at });
 
       const userId = user.id
 
       // Optional: ensure email confirmed before allowing org creation
       const confirmed = user.email_confirmed_at || user.confirmed_at
-      if (!confirmed) return NextResponse.json({ error: 'Email not confirmed' }, { status: 403 })
+      if (!confirmed) {
+        console.error('create-organization: Email not confirmed for user', userId);
+        return NextResponse.json({ error: 'Email not confirmed' }, { status: 403 })
+      }
 
       const insertPayload = {
         name: (payload.name || '').trim(),

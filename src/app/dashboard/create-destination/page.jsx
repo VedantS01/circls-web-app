@@ -3,6 +3,28 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
+import {
+  Container,
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  TextField,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Grid,
+  Alert,
+  CircularProgress,
+  Divider,
+} from '@mui/material'
+import {
+  Place,
+  ArrowBack,
+  Save,
+} from '@mui/icons-material'
 
 export default function CreateDestination() {
   const router = useRouter()
@@ -102,90 +124,163 @@ export default function CreateDestination() {
   }
 
   return (
-    <div className="mx-auto max-w-xl p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Create destination</h1>
-        <p className="text-sm text-muted">Destinations can only be created for organizations where you have the Destination editor permission.</p>
-      </div>
+    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', py: 4 }}>
+      <Container maxWidth="md">
+        {/* Header */}
+        <Box sx={{ mb: 4 }}>
+          <Button
+            startIcon={<ArrowBack />}
+            onClick={() => router.push('/dashboard')}
+            sx={{ mb: 2 }}
+          >
+            Back to Dashboard
+          </Button>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+            <Place sx={{ fontSize: 40, color: 'primary.main' }} />
+            <Box>
+              <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                Create Destination
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Add a new venue to your organization
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
 
-      {fetching ? (
-        <div>Loading organizations…</div>
-      ) : memberships.length === 0 ? (
-        <div className="rounded border border-dashed p-4 text-sm text-muted">
-          You do not have destination editor access on any organization. Ask a staff manager to grant permissions.
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {errorMessage && (
-            <div className="rounded border border-warning bg-warning/10 px-3 py-2 text-sm text-warning">{errorMessage}</div>
-          )}
+        {fetching ? (
+          <Card elevation={0} sx={{ border: 1, borderColor: 'divider', textAlign: 'center', py: 8 }}>
+            <CircularProgress />
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+              Loading organizations...
+            </Typography>
+          </Card>
+        ) : memberships.length === 0 ? (
+          <Alert severity="warning">
+            You do not have destination editor access on any organization. Ask a staff manager to grant permissions.
+          </Alert>
+        ) : (
+          <Card elevation={0} sx={{ border: 1, borderColor: 'divider' }}>
+            <CardContent sx={{ p: 4 }}>
+              {errorMessage && (
+                <Alert severity="error" sx={{ mb: 3 }}>
+                  {errorMessage}
+                </Alert>
+              )}
 
-          <label className="block text-sm font-medium">
-            Organization
-            <select value={selectedOrgId} onChange={(event) => setSelectedOrgId(event.target.value)} className="input mt-1">
-              {memberships.map(org => (
-                <option key={org.id} value={org.id}>{org.name}</option>
-              ))}
-            </select>
-          </label>
+              <form onSubmit={handleSubmit}>
+                <Grid container spacing={3}>
+                  {/* Organization Selection */}
+                  <Grid item xs={12}>
+                    <FormControl fullWidth>
+                      <InputLabel>Organization</InputLabel>
+                      <Select
+                        value={selectedOrgId}
+                        label="Organization"
+                        onChange={(event) => setSelectedOrgId(event.target.value)}
+                      >
+                        {memberships.map(org => (
+                          <MenuItem key={org.id} value={org.id}>
+                            {org.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
 
-          <label className="block text-sm font-medium">
-            Name
-            <input
-              required
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              className="input mt-1"
-              placeholder="eg. Court 1"
-            />
-          </label>
+                  <Grid item xs={12}>
+                    <Divider />
+                  </Grid>
 
-          <label className="block text-sm font-medium">
-            Description
-            <textarea
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              className="input mt-1 h-24"
-              placeholder="Optional overview for the team"
-            />
-          </label>
+                  {/* Name */}
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      required
+                      label="Destination Name"
+                      value={name}
+                      onChange={(event) => setName(event.target.value)}
+                      placeholder="e.g. Court 1"
+                      helperText="A clear, descriptive name for your destination"
+                    />
+                  </Grid>
 
-          <label className="block text-sm font-medium">
-            Address
-            <input
-              value={address}
-              onChange={(event) => setAddress(event.target.value)}
-              className="input mt-1"
-              placeholder="Optional location"
-            />
-          </label>
+                  {/* Description */}
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      multiline
+                      rows={4}
+                      label="Description"
+                      value={description}
+                      onChange={(event) => setDescription(event.target.value)}
+                      placeholder="Provide details about this destination..."
+                      helperText="Optional overview for your team and visitors"
+                    />
+                  </Grid>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <label className="block text-sm font-medium">
-              Capacity
-              <input
-                type="number"
-                min={1}
-                value={capacity}
-                onChange={(event) => setCapacity(Number(event.target.value))}
-                className="input mt-1"
-              />
-            </label>
+                  {/* Address */}
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Address"
+                      value={address}
+                      onChange={(event) => setAddress(event.target.value)}
+                      placeholder="123 Main Street, City, Country"
+                      helperText="Physical location of the destination"
+                    />
+                  </Grid>
 
-            <label className="block text-sm font-medium">
-              Type
-              <input
-                value={type}
-                onChange={(event) => setType(event.target.value)}
-                className="input mt-1"
-                placeholder="eg. Badminton court"
-              />
-            </label>
-          </div>
+                  {/* Capacity and Type */}
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      label="Capacity"
+                      value={capacity}
+                      onChange={(event) => setCapacity(Number(event.target.value))}
+                      inputProps={{ min: 1 }}
+                      helperText="Maximum number of people"
+                    />
+                  </Grid>
 
-          <button type="submit" className="btn btn-primary" disabled={!canCreate || loading}>{loading ? 'Creating…' : 'Create destination'}</button>
-        </form>
-      )}
-    </div>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Type"
+                      value={type}
+                      onChange={(event) => setType(event.target.value)}
+                      placeholder="e.g. Badminton Court"
+                      helperText="Category or type of venue"
+                    />
+                  </Grid>
+
+                  {/* Submit Button */}
+                  <Grid item xs={12}>
+                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                      <Button
+                        variant="outlined"
+                        onClick={() => router.push('/dashboard')}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        size="large"
+                        startIcon={loading ? <CircularProgress size={20} /> : <Save />}
+                        disabled={!canCreate || loading}
+                      >
+                        {loading ? 'Creating...' : 'Create Destination'}
+                      </Button>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </form>
+            </CardContent>
+          </Card>
+        )}
+      </Container>
+    </Box>
   )
 }

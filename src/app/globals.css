@@ -1,46 +1,64 @@
 @import "tailwindcss";
 
-/* Theme variables: primary, secondary, accent + surface/background/focus */
+/* Theme variables: Modern, professional color scheme for light mode */
 :root {
-  /* Core colors (light mode) */
-  --color-background: #ffffff;
-  --color-foreground: #0f1720; /* near-black for good contrast */
-  --color-primary: #0ea5e9; /* bright sky */
-  --color-secondary: #7c3aed; /* purple */
-  --color-accent: #f97316; /* orange accent */
+  /* Core brand colors (light mode) */
+  --color-background: #f8fafc;
+  --color-foreground: #0f172a; /* slate-900 for crisp text */
+  --color-primary: #3b82f6; /* blue-500 - trustworthy, professional */
+  --color-primary-light: #60a5fa; /* blue-400 */
+  --color-primary-dark: #2563eb; /* blue-600 */
+  --color-secondary: #8b5cf6; /* violet-500 - creative accent */
+  --color-secondary-light: #a78bfa; /* violet-400 */
+  --color-accent: #f59e0b; /* amber-500 - attention grabbing */
+  --color-accent-light: #fbbf24; /* amber-400 */
 
   /* Surfaces & UI */
   --color-surface: #ffffff;
-  --color-surface-1: #f8fafc;
-  --color-border: #e6edf3;
-  --color-muted: #6b7280;
-  --color-success: #16a34a;
-  --glass-bg: rgba(255,255,255,0.6);
+  --color-surface-1: #f1f5f9; /* slate-100 */
+  --color-surface-2: #e2e8f0; /* slate-200 */
+  --color-border: #cbd5e1; /* slate-300 */
+  --color-border-light: #e2e8f0; /* slate-200 */
+  --color-muted: #64748b; /* slate-500 */
+  --color-muted-light: #94a3b8; /* slate-400 */
+  
+  /* Semantic colors */
+  --color-success: #10b981; /* emerald-500 */
+  --color-success-light: #34d399; /* emerald-400 */
+  --color-success-bg: #d1fae5; /* emerald-100 */
+  --color-warning: #f59e0b; /* amber-500 */
+  --color-warning-light: #fbbf24; /* amber-400 */
+  --color-warning-bg: #fef3c7; /* amber-100 */
+  --color-error: #ef4444; /* red-500 */
+  --color-error-light: #f87171; /* red-400 */
+  --color-error-bg: #fee2e2; /* red-100 */
+  --color-info: #3b82f6; /* blue-500 */
+  --color-info-light: #60a5fa; /* blue-400 */
+  --color-info-bg: #dbeafe; /* blue-100 */
+  
+  /* Special effects */
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
-/* Dark mode overrides (follows browser preference) */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-background: #071024;
-    --color-foreground: #e6eef8;
-    --color-primary: #38bdf8; /* lighter sky for dark */
-    --color-secondary: #8b5cf6;
-    --color-accent: #fb923c;
-
-    --color-surface: #071428;
-    --color-surface-1: #071a2a;
-    --color-border: #12324a;
-    --color-muted: #9aa6b2;
-    --color-success: #4ade80;
-    --glass-bg: rgba(8,12,20,0.6);
-  }
-}
+/* Remove dark mode - light mode only */
 
 /* expose simple semantic tokens */
 body {
   background: var(--color-background);
   color: var(--color-foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
 }
 
 /* Theme-aware helpers */
