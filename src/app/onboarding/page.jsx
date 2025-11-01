@@ -77,16 +77,29 @@ export default function OnboardingPage() {
     }
 
     const payload = { name: orgName.trim() }
-    const { error, data } = await supabase
-      .from('organizations')
-      .insert([payload])
-      .select()
-      .single()
-    setLoading(false)
-    if (error) {
-      alert('Error creating organization: ' + error.message)
-    } else {
+
+    // Send the user's access token to the server so the admin client can create the org
+    const accessToken = session.access_token || (await supabase.auth.getSession()).data?.session?.access_token
+    try {
+      const res = await fetch('/api/create-organization', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ payload, userId: session.user.id }),
+      })
+      const result = await res.json()
+      setLoading(false)
+      if (!res.ok) {
+        alert('Error creating organization: ' + (result.error || res.statusText))
+        return
+      }
       router.push('/dashboard')
+    } catch (err) {
+      setLoading(false)
+      console.error('Create org request failed', err)
+      alert('Error creating organization: ' + String(err))
     }
   }
 
